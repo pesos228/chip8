@@ -60,3 +60,17 @@ func (c *Cpu) Reset() {
 	c.Dt = 0
 	c.St = 0
 }
+
+func (c *Cpu) Execute() {
+	opcode := uint16(c.Memory[c.Pc])<<8 | uint16(c.Memory[c.Pc+1])
+
+	for _, instr := range instructions {
+		if opcode&instr.Mask == instr.Pattern {
+			instr.Handler(c, opcode)
+			return
+		}
+	}
+
+	fmt.Printf("Unknown opcode: 0x%X\n", opcode)
+	c.Pc += 2
+}
