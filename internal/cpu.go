@@ -7,7 +7,7 @@ import (
 type Cpu struct {
 	Memory    []uint8
 	Registers [16]uint8
-	Stack     [16]uint8
+	Stack     [16]uint16
 	Sp        uint8
 	Pc        uint16
 	I         uint16
@@ -53,7 +53,7 @@ func (c *Cpu) LoadGame(game []uint8) error {
 func (c *Cpu) Reset() {
 	c.Memory = make([]uint8, c.Config.MemorySize)
 	c.Registers = [16]uint8{}
-	c.Stack = [16]uint8{}
+	c.Stack = [16]uint16{}
 	c.Sp = 0
 	c.Pc = c.Config.ProgramStart
 	c.I = 0
