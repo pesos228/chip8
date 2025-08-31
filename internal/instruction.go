@@ -11,10 +11,15 @@ var instructions []Instruction
 
 func init() {
 	instructions = []Instruction{
-		{Name: "RET", Mask: 0xFFFF, Pattern: 0x00EE, Handler: handleRet},
-		{Name: "ADD Vx, byte", Mask: 0xF000, Pattern: 0x7000, Handler: handleAddVxByte},
-		{Name: "JP addr", Mask: 0xF000, Pattern: 0x1000, Handler: handleJumpAddr},
-		{Name: "SYS addr", Mask: 0xF000, Pattern: 0x0000, Handler: handleSysAddr},
+		{Name: "RET (00EE)", Mask: 0xFFFF, Pattern: 0x00EE, Handler: handleRet},
+		{Name: "SYS addr (0nnn)", Mask: 0xF000, Pattern: 0x0000, Handler: handleSysAddr},
+		{Name: "JP addr (1nnn)", Mask: 0xF000, Pattern: 0x1000, Handler: handleJumpAddr},
+		{Name: "CALL addr (2nnn)", Mask: 0xF000, Pattern: 0x2000, Handler: handleCallAddr},
+		{Name: "SE Vx, byte (3xkk)", Mask: 0xF000, Pattern: 0x3000, Handler: handleSkipIfEqual},
+		{Name: "SNE Vx, byte (4xkk)", Mask: 0xF000, Pattern: 0x4000, Handler: handleSkipIfNotEqual},
+		{Name: "SE Vx, Vy (5xy0)", Mask: 0xF000, Pattern: 0x5000, Handler: handleSkipIfRegEqual},
+		{Name: "LD Vx, byte (6xkk)", Mask: 0xF000, Pattern: 0x6000, Handler: handlePutValueInReg},
+		{Name: "ADD Vx, byte (7xkk)", Mask: 0xF000, Pattern: 0x7000, Handler: handleAddVxByte},
 	}
 }
 
@@ -40,5 +45,50 @@ func handleRet(c *Cpu, opcode uint16) {
 	}
 	c.Sp--
 	c.Pc = c.Stack[c.Sp]
+}
+
+func handleCallAddr(c *Cpu, opcode uint16) {
+	addr := opcode & 0x0FFF
+	c.Stack[c.Sp] = c.Pc + 2
+	c.Sp++
+	c.Pc = addr
+}
+
+func handleSkipIfEqual(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	kk := uint8(opcode & 0x00FF)
+	if c.Registers[x] == kk {
+		c.Pc += 4
+	} else {
+		c.Pc += 2
+	}
+}
+
+func handleSkipIfNotEqual(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	kk := uint8(opcode & 0x00FF)
+	if c.Registers[x] != kk {
+		c.Pc += 4
+	} else {
+		c.Pc += 2
+	}
+}
+
+func handleSkipIfRegEqual(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	if c.Registers[x] == c.Registers[y] {
+		c.Pc += 4
+	} else {
+		c.Pc += 2
+	}
+}
+
+func handlePutValueInReg(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	kk := uint8(opcode & 0x00FF)
+
+	c.Registers[x] = kk
 	c.Pc += 2
 }
