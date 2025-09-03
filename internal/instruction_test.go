@@ -181,3 +181,78 @@ func TestInstruction_6XKK(t *testing.T) {
 		t.Errorf("Expected Register[4] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[4])
 	}
 }
+
+func TestInstruction_8XY0(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8340)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x3
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x3)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+}
+
+func TestInstruction_8XY1(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8341)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x3
+	cpu.Registers[3] = 0x10
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x13)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+}
+
+func TestInstruction_8XY2(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8342)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x3
+	cpu.Registers[3] = 0x13
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x3)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+}
+
+func TestInstruction_8XY3(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8343)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x3
+	cpu.Registers[3] = 0x13
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x10)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+}

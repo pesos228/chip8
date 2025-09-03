@@ -12,6 +12,10 @@ var instructions []Instruction
 func init() {
 	instructions = []Instruction{
 		{Name: "RET (00EE)", Mask: 0xFFFF, Pattern: 0x00EE, Handler: handleRet},
+		{Name: "LD Vx, Vy (8xy0)", Mask: 0xF00F, Pattern: 0x8000, Handler: handleStoreValFromReg},
+		{Name: "OR Vx, Vy (8xy1)", Mask: 0xF00F, Pattern: 0x8001, Handler: handleBitwiseOr},
+		{Name: "AND Vx, Vy (8xy2)", Mask: 0xF00F, Pattern: 0x8002, Handler: handleBitwiseAnd},
+		{Name: "XOR Vx, Vy (8xy3)", Mask: 0xF00F, Pattern: 0x8003, Handler: handleBitwiseXor},
 		{Name: "SYS addr (0nnn)", Mask: 0xF000, Pattern: 0x0000, Handler: handleSysAddr},
 		{Name: "JP addr (1nnn)", Mask: 0xF000, Pattern: 0x1000, Handler: handleJumpAddr},
 		{Name: "CALL addr (2nnn)", Mask: 0xF000, Pattern: 0x2000, Handler: handleCallAddr},
@@ -90,5 +94,39 @@ func handlePutValueInReg(c *Cpu, opcode uint16) {
 	kk := uint8(opcode & 0x00FF)
 
 	c.Registers[x] = kk
+	c.Pc += 2
+}
+
+func handleStoreValFromReg(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	c.Registers[x] = c.Registers[y]
+
+	c.Pc += 2
+}
+
+func handleBitwiseOr(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	c.Registers[x] = c.Registers[x] | c.Registers[y]
+
+	c.Pc += 2
+}
+
+func handleBitwiseAnd(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	c.Registers[x] = c.Registers[x] & c.Registers[y]
+	c.Pc += 2
+}
+
+func handleBitwiseXor(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	c.Registers[x] = c.Registers[x] ^ c.Registers[y]
 	c.Pc += 2
 }
