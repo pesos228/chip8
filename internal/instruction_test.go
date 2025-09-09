@@ -256,3 +256,193 @@ func TestInstruction_8XY3(t *testing.T) {
 		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
 	}
 }
+
+func TestInstruction_8XY4_no_carry(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8344)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x3
+	cpu.Registers[3] = 0x13
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x16)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x0)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY4_with_carry(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8344)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x03
+	cpu.Registers[3] = 0xFF
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x02)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x1)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY5_no_borrow(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8345)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x0A
+	cpu.Registers[3] = 0x14
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x0A)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x1)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY5_with_borrow(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8345)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x14
+	cpu.Registers[3] = 0x0A
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0xF6)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x0)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY6_LSB_is_zero(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8346)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0x0A
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x05)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x0)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY6_LSB_is_one(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8346)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0x0B
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x05)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x1)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY7_no_borrow(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8347)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x0A
+	cpu.Registers[3] = 0x05
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x05)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x1)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XY7_with_borrow(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x8347)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[4] = 0x05
+	cpu.Registers[3] = 0x0A
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0xFB)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x0)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}

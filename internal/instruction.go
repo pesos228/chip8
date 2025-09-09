@@ -16,6 +16,10 @@ func init() {
 		{Name: "OR Vx, Vy (8xy1)", Mask: 0xF00F, Pattern: 0x8001, Handler: handleBitwiseOr},
 		{Name: "AND Vx, Vy (8xy2)", Mask: 0xF00F, Pattern: 0x8002, Handler: handleBitwiseAnd},
 		{Name: "XOR Vx, Vy (8xy3)", Mask: 0xF00F, Pattern: 0x8003, Handler: handleBitwiseXor},
+		{Name: "ADD Vx, Vy (8xy4)", Mask: 0xF00F, Pattern: 0x8004, Handler: handleAddVxVy},
+		{Name: "SUB Vx, Vy (8xy5)", Mask: 0xF00F, Pattern: 0x8005, Handler: handleSubVxVy},
+		{Name: "SHR Vx {, Vy} (8xy6)", Mask: 0xF00F, Pattern: 0x8006, Handler: handleShrVx},
+		{Name: "SUBN Vx, Vy (8xy7)", Mask: 0xF00F, Pattern: 0x8007, Handler: handleSubnVxVy},
 		{Name: "SYS addr (0nnn)", Mask: 0xF000, Pattern: 0x0000, Handler: handleSysAddr},
 		{Name: "JP addr (1nnn)", Mask: 0xF000, Pattern: 0x1000, Handler: handleJumpAddr},
 		{Name: "CALL addr (2nnn)", Mask: 0xF000, Pattern: 0x2000, Handler: handleCallAddr},
@@ -128,5 +132,62 @@ func handleBitwiseXor(c *Cpu, opcode uint16) {
 	y := (opcode & 0x00F0) >> 4
 
 	c.Registers[x] = c.Registers[x] ^ c.Registers[y]
+	c.Pc += 2
+}
+
+func handleAddVxVy(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	sum := uint16(c.Registers[x]) + uint16(c.Registers[y])
+
+	if sum > 255 {
+		c.Registers[15] = 1
+	} else {
+		c.Registers[15] = 0
+	}
+
+	c.Registers[x] = uint8(sum)
+	c.Pc += 2
+}
+
+func handleSubVxVy(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	if c.Registers[x] > c.Registers[y] {
+		c.Registers[15] = 1
+	} else {
+		c.Registers[15] = 0
+	}
+
+	c.Registers[x] = c.Registers[x] - c.Registers[y]
+	c.Pc += 2
+}
+
+func handleShrVx(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+
+	if (c.Registers[x] & 0x01) == 1 {
+		c.Registers[15] = 1
+	} else {
+		c.Registers[15] = 0
+	}
+
+	c.Registers[x] = c.Registers[x] / 2
+	c.Pc += 2
+}
+
+func handleSubnVxVy(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	if c.Registers[y] > c.Registers[x] {
+		c.Registers[15] = 1
+	} else {
+		c.Registers[15] = 0
+	}
+
+	c.Registers[x] = c.Registers[y] - c.Registers[x]
 	c.Pc += 2
 }
