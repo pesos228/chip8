@@ -446,3 +446,147 @@ func TestInstruction_8XY7_with_borrow(t *testing.T) {
 		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
 	}
 }
+
+func TestInstruction_8XYE_MSB_is_zero(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x834E)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0x3A
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0x74)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x0)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_8XYE_MSB_is_one(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x834E)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0xFA
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(0xF4)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+
+	expectedVFValue := uint8(0x1)
+	if expectedVFValue != cpu.Registers[15] {
+		t.Errorf("Expected Register[15] to be 0x%X, got 0x%X", expectedVFValue, cpu.Registers[15])
+	}
+}
+
+func TestInstruction_9XY0_equal(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x9340)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0x12
+	cpu.Registers[4] = 0x12
+
+	cpu.Execute()
+
+	expectedPc := uint16(0x102)
+	if expectedPc != cpu.Pc {
+		t.Errorf("Expected PC to be 0x%X, got 0x%X", expectedPc, cpu.Pc)
+	}
+}
+
+func TestInstruction_9XY0_not_equal(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0x9340)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[3] = 0x12
+	cpu.Registers[4] = 0x34
+
+	cpu.Execute()
+
+	expectedPc := uint16(0x104)
+	if expectedPc != cpu.Pc {
+		t.Errorf("Expected PC to be 0x%X, got 0x%X", expectedPc, cpu.Pc)
+	}
+}
+
+func TestInstruction_ANNN(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0xA456)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Execute()
+
+	expectedI := uint16(0x456)
+	if expectedI != cpu.I {
+		t.Errorf("Expected I to be 0x%X, got 0x%X", expectedI, cpu.I)
+	}
+}
+
+func TestInstruction_BNNN(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0xB234)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	cpu.Registers[0] = 0x10
+
+	cpu.Execute()
+
+	expectedPc := uint16(0x244)
+	if expectedPc != cpu.Pc {
+		t.Errorf("Expected PC to be 0x%X, got 0x%X", expectedPc, cpu.Pc)
+	}
+}
+
+func TestInstruction_CXKK(t *testing.T) {
+	cpu := NewCpu(512, 0x100)
+
+	opcode := uint16(0xC3AA)
+
+	cpu.Memory[0x100] = uint8(opcode >> 8)
+	cpu.Memory[0x101] = uint8(opcode & 0x00FF)
+
+	originalRandIntn := randIntn
+
+	defer func() {
+		randIntn = originalRandIntn
+	}()
+
+	randIntn = func(n int) int {
+		return 40
+	}
+
+	cpu.Execute()
+
+	expectedRegisterValue := uint8(40 & 0xAA)
+	if expectedRegisterValue != cpu.Registers[3] {
+		t.Errorf("Expected Register[3] to be 0x%X, got 0x%X", expectedRegisterValue, cpu.Registers[3])
+	}
+}

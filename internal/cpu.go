@@ -2,6 +2,7 @@ package cpu
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 type Cpu struct {
@@ -15,6 +16,8 @@ type Cpu struct {
 	St        uint8
 	Config    Config
 }
+
+var randIntn = rand.Intn
 
 type Config struct {
 	MemorySize   uint16

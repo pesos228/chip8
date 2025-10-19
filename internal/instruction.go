@@ -20,6 +20,11 @@ func init() {
 		{Name: "SUB Vx, Vy (8xy5)", Mask: 0xF00F, Pattern: 0x8005, Handler: handleSubVxVy},
 		{Name: "SHR Vx {, Vy} (8xy6)", Mask: 0xF00F, Pattern: 0x8006, Handler: handleShrVx},
 		{Name: "SUBN Vx, Vy (8xy7)", Mask: 0xF00F, Pattern: 0x8007, Handler: handleSubnVxVy},
+		{Name: "SHL Vx {, Vy} (8xyE)", Mask: 0xF00F, Pattern: 0x800E, Handler: handleShlVx},
+		{Name: "SNE Vx, Vy (9xy0)", Mask: 0xF000, Pattern: 0x9000, Handler: handleSneVxVy},
+		{Name: "LD I, addr (Annn)", Mask: 0xF000, Pattern: 0xA000, Handler: handleLdIAddr},
+		{Name: "JP V0, addr (Bnnn)", Mask: 0xF000, Pattern: 0xB000, Handler: handleJumpAddrV0},
+		{Name: "RND Vx, byte (Cxkk)", Mask: 0xF000, Pattern: 0xC000, Handler: handleRndVxByte},
 		{Name: "SYS addr (0nnn)", Mask: 0xF000, Pattern: 0x0000, Handler: handleSysAddr},
 		{Name: "JP addr (1nnn)", Mask: 0xF000, Pattern: 0x1000, Handler: handleJumpAddr},
 		{Name: "CALL addr (2nnn)", Mask: 0xF000, Pattern: 0x2000, Handler: handleCallAddr},
@@ -189,5 +194,50 @@ func handleSubnVxVy(c *Cpu, opcode uint16) {
 	}
 
 	c.Registers[x] = c.Registers[y] - c.Registers[x]
+	c.Pc += 2
+}
+
+func handleShlVx(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+
+	if (c.Registers[x] & 0x80) != 0 {
+		c.Registers[15] = 1
+	} else {
+		c.Registers[15] = 0
+	}
+
+	c.Registers[x] = c.Registers[x] * 2
+	c.Pc += 2
+}
+
+func handleSneVxVy(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	if c.Registers[x] != c.Registers[y] {
+		c.Pc += 4
+	} else {
+		c.Pc += 2
+	}
+}
+
+func handleLdIAddr(c *Cpu, opcode uint16) {
+	addr := opcode & 0x0FFF
+	c.I = addr
+	c.Pc += 2
+}
+
+func handleJumpAddrV0(c *Cpu, opcode uint16) {
+	addr := opcode & 0x0FFF
+	c.Pc = uint16(c.Registers[0]) + addr
+}
+
+func handleRndVxByte(c *Cpu, opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	kk := uint8(opcode & 0x00FF)
+
+	randomByte := uint8(randIntn(256))
+
+	c.Registers[x] = randomByte & kk
 	c.Pc += 2
 }
